@@ -1,7 +1,6 @@
 package main
 
 import (
-	// "bufio"
 	"bytes"
 	"context"
 	"fmt"
@@ -10,9 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	// "regexp"
-	// "strings"
-
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	flag "github.com/spf13/pflag"
@@ -21,12 +17,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"github.com/google/uuid"
-	// "github.com/hajimehoshi/ebiten/v2/text"
-	// "golang.org/x/image/font"
-	// "golang.org/x/image/font/opentype"
-	// "github.com/hajimehoshi/ebiten/v2/examples/resources/fonts"
-	// "golang.org/x/image/font/basicfont"
-	// "github.com/hajimehoshi/ebiten/inpututil"
 )
 
 const (
@@ -67,17 +57,6 @@ type Node struct {
 	Roles   string           
 	Age     string   
 	Version  string
-}
-
-func RunShellCommand(command string) (string, error) {
-	var stdout bytes.Buffer
-    var stderr bytes.Buffer
-    cmd := exec.Command("bash", "-c", command)
-    cmd.Stdout = &stdout
-    cmd.Stderr = &stderr
-    err := cmd.Run()
-	fmt.Println(stderr.String())
-    return stdout.String(), err
 }
 
 func HomeDir() string {
@@ -121,11 +100,6 @@ func ClientSetup() (*kubernetes.Clientset, error) {
 }
 
 func GetNodeNames() ([]string, error) {
-	// output, err := RunShellCommand("kubectl get nodes")
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// var columns = regexp.MustCompile(`\s+`)
 	clientSet, err := ClientSetup()
 	if err != nil {
 		fmt.Println("error in creating client set: ", err)
@@ -140,17 +114,6 @@ func GetNodeNames() ([]string, error) {
 	for  _, n := range nodes.Items {
 		nodeList = append(nodeList, n.Name)
 	}
-	// r := strings.NewReader(output)
-	// scanner := bufio.NewScanner(r)
-	// for scanner.Scan() {
-	// 	line := scanner.Text()
-	// 	line = strings.TrimSpace(line)
-	// 	cols := columns.Split(line, -1)
-	// 	row := Node{cols[0], cols[1], cols[2], cols[3], cols[4]}
-	// 	if row.Name != "NAME" {
-	// 		nodeList = append(nodeList, row.Name)
-	// 	}
-	// }
 	return nodeList, nil
 }
 
@@ -190,19 +153,13 @@ func (g *Game) Update() error {
 		fmt.Println("error in getting node list: ", err)
 		os.Exit(1)
 	}
-	// Move active balloons
+	
 	for _, b := range g.balloons {
 		if b.active {
 			b.y -= balloonSpeed
 		}
 	}
 
-	// Move active bullets
-	// for _, b := range g.bullets {
-	// 	if b.active {
-	// 		b.y -= bulletSpeed
-	// 	}
-	// }
 	for i := 0; i < len(g.bullets); i++ {
 		g.bullets[i].y -= bulletSpeed
 		if g.bullets[i].y < 0 {
@@ -211,10 +168,8 @@ func (g *Game) Update() error {
 		}
 	}
 
-	// Check for bullet hits
+	
 	for _, b := range g.bullets {
-		// if b.active {
-		// fmt.Println("bullet is active")
 		for _, b2 := range g.balloons {
 			if b2.active && b.x >= b2.x && b.x <= b2.x+50 && b.y <= b2.y+50 {
 				b.active = false
@@ -226,32 +181,11 @@ func (g *Game) Update() error {
 					os.Exit(1)
 				}
 				g.score++
-				
-				// tt, err := opentype.Parse(fonts.MPlus1pRegular_ttf)
-				// if err != nil {
-				// 	log.Fatal(err)
-				// }
-
-				// const dpi = 72
-				// mplusNormalFont, err := opentype.NewFace(tt, &opentype.FaceOptions{
-				// 	Size:    24,
-				// 	DPI:     dpi,
-				// 	Hinting: font.HintingVertical,
-				// })
-				// if err != nil {
-				// 	log.Fatal(err)
-				// }
-				// x, y := ebiten.CursorPosition()
-				// text.Draw(screen, "haha", mplusNormalFont, x, y, color.White)
-				// msg := "Hello, Ebiten!"
-				// face := basicfont.Face7x13
-				// text.Draw(screen, msg, face, 50, 50, color.White)
 			}
 		}
-		// }
 	}
 
-	// Generate new balloons
+	
 	if rand.Float64() < 0.05 {
 		for _, b := range g.balloons {
 			if !b.active {
@@ -263,19 +197,6 @@ func (g *Game) Update() error {
 		}
 	}
 
-	// Generate new bullets
-	// if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-
-	// 	for _, b := range g.bullets {
-	// 		if !b.active {
-	// 			b.active = true
-	// 			x, _ := ebiten.CursorPosition()
-	// 			b.x = float64(math.Mod(float64(x), screenWidth))
-	// 			b.y = float64(screenHeight)
-	// 			break
-	// 		}
-	// 	}
-	// }
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 		x, y := ebiten.CursorPosition()
 		g.bullets = append(g.bullets, &Bullet{x: float64(x), y: float64(y)})
@@ -301,21 +222,15 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	for _, balloon := range g.balloons {
 		if balloon.shooted == 1 {
-			
 			idMap = append(idMap, balloon.id)
-			// time.Sleep(300)
-			// ebitenutil.DebugPrintAt(screen, "balloon", int(balloon.x), int(balloon.y))
 		}
 		balloon.shooted = 0
 	}
 
 	ebitenutil.DebugPrint(screen, fmt.Sprintf("Score: %d", g.score))
-	// for _, v :=  range idMap {
 	if len(idMap) > 0 {
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Pods scheduled on node %s", idMap[len(idMap)-1]), 0, 50)
 	}
-	
-	// }
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
@@ -347,124 +262,7 @@ func main() {
 		game.bullets[i] = &Bullet{}
 	}
 
-	// if err := ebiten.Run(Update, screenWidth, screenHeight, 5, "Balloon Shooter"); err != nil {
-	// 	panic(err)
-	// }
-
 	if err := ebiten.RunGame(game); err != nil {
 		panic(err)
 	}
 }
-
-
-
-// package main
-
-// import (
-// 	"bufio"
-// 	"fmt"
-// 	"os/exec"
-// 	"strings"
-// )
-
-// type Rule struct {
-// 	Chain    string
-// 	Target   string
-// 	Protocol string
-// 	Opt      string
-// 	In       string
-// 	Out      string
-// 	Source   string
-// 	Dest     string
-// 	Extra    string
-// 	next     *Rule
-// }
-
-// func main() {
-// 	// Run the iptables command and get its output
-// 	cmd := "kubectl exec -it kube-proxy-4pp9s -n kube-system -- sh -c 'iptables -S'"
-// 	output, err := executeCommand(cmd)
-// 	if err != nil {
-// 		fmt.Println("Error executing command: ", err)
-// 		return
-// 	}
-
-// 	// Parse the output and create a linked list of rules
-// 	rules := createRulesList(output)
-
-// 	// Print the list of rules
-// 	for rule := rules; rule != nil; rule = rule.next {
-// 		fmt.Printf("%s %s %s %s %s %s %s %s %s\n",
-// 			rule.Chain, rule.Target, rule.Protocol, rule.Opt, rule.In, rule.Out, rule.Source, rule.Dest, rule.Extra)
-// 	}
-// }
-
-// // executeCommand runs a command and returns its output
-// func executeCommand(cmd string) (string, error) {
-// 	output, err := exec.Command("kubectl", "exec", "-it", "kube-proxy-4pp9s", "-n", "kube-system", "--", "sh", "-c", "iptables -L").CombinedOutput()
-// 	if err != nil {
-// 		return "", err
-// 	}
-
-// 	return string(output), nil
-// }
-
-// // createRulesList parses the output of the iptables command and returns a linked list of rules
-// func createRulesList(output string) *Rule {
-// 	var head *Rule
-// 	var tail *Rule
-
-// 	scanner := bufio.NewScanner(strings.NewReader(output))
-// 	for scanner.Scan() {
-// 		line := scanner.Text()
-// 		fields := strings.Fields(line)
-// 		// if len(fields) < 6 || fields[0] != "Chain" {
-// 		// 	continue
-// 		// }
-
-// 		if fields[0] == "Chain" {
-// 			chainName := fields[1]
-// 			scanner.Text()
-// 			line := scanner.Text()
-
-// 			if line == ""
-
-// 			rule := &Rule{
-// 				Chain:    chainName,
-// 				Target:   fields[2],
-// 				Protocol: fields[3],
-// 				Opt:      fields[4],
-// 				In:       fields[5],
-// 				Out:      fields[6],
-// 				Source:   fields[7],
-// 				Dest:     fields[8],
-// 				Extra:    strings.Join(fields[9:], " "),
-// 				next:     nil,
-// 			}
-// 		}
-
-// 		rule := &Rule{
-// 			Chain:    fields[1],
-// 			Target:   fields[2],
-// 			Protocol: fields[3],
-// 			Opt:      fields[4],
-// 			In:       fields[5],
-// 			Out:      fields[6],
-// 			Source:   fields[7],
-// 			Dest:     fields[8],
-// 			Extra:    strings.Join(fields[9:], " "),
-// 			next:     nil,
-// 		}
-
-// 		if head == nil {
-// 			head = rule
-// 			tail = rule
-// 		} else {
-// 			tail.next = rule
-// 			tail = rule
-// 		}
-// 		fmt.Println(rule)
-// 	}
-
-// 	return head
-// }
